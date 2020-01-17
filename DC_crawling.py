@@ -1,9 +1,7 @@
 from selenium import webdriver
-from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as expect
 import time
 from random import randint
 from bs4 import BeautifulSoup
@@ -42,7 +40,7 @@ def load_content(driver):
     page = driver.page_source
     soup = BeautifulSoup(page, 'lxml')
 
-    items1 = driver.find_elements_by_css_selector('table#mainboard span#subject a')
+    items1 = driver.find_elements_by_class_name()
 
     titles_len1 = soup.find_all("span", attrs={'id':"subject"})
     titles_len2 = []
@@ -61,7 +59,7 @@ def load_content(driver):
         if items != items1:
             print('망함')
         driver.implicitly_wait(20)
-        if int(item_times[2*i + 31]) < 200:
+        if int(item_times[2*i + 31]) < 150:
             continue
         items[i].click()
 
@@ -109,28 +107,7 @@ def load_content(driver):
     print(data)
 
 driver = webdriver.Chrome('/Users/sehwa/Downloads/chromedriver.exe')
-driver.get("https://www.instiz.net/pt")
-print("enter " + driver.title)
-delay(5)
-
-
-search = driver.find_element_by_link_text("기간")
-search.click()
-term = driver.find_elements_by_css_selector("form#search div#showdetail input")
-term[0].send_keys(time2)
-term[1].send_keys(time1)
-search.submit()
-delay(5)
-load_content(driver)
-for i in range(2,12):
-    name = f'{i}'
-    index = driver.find_element_by_link_text(name)
-    index.click()
-    load_content(driver)
-
-
-driver = webdriver.Chrome('/Users/sehwa/Downloads/chromedriver.exe')
-driver.get("https://www.instiz.net/name_enter")
+driver.get("https://enter.dcinside.com/")
 print("enter " + driver.title)
 delay(5)
 
