@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -9,16 +10,18 @@ from bs4 import BeautifulSoup
 import re
 import csv
 
-# https://gist.github.com/aclisp/0c2965af80816bd332b7096a89908ef6 참고함
+# 잘 안되네 - 계속 게시판이 업데이트 되는 게 문제인듯
 def delay(n):
     time.sleep(randint(2, n))
 
-youtube_data = [] #데이터 저장 리스트
+    data = [] #데이터 저장 리스트
 
 driver = webdriver.Chrome('/Users/sehwa/Downloads/chromedriver.exe')
 driver.get("https://www.instiz.net/pt")
 print("enter " + driver.title)
 delay(5)
+
+
 
 
 # item = driver.find_element_by_css_selector("ytd-masthead div#buttons ytd-button-renderer a")
@@ -54,42 +57,59 @@ delay(5)
 page = driver.page_source
 soup = BeautifulSoup(page, 'lxml')
 
-items = driver.find_elements_by_xpath('//*[@id="subject"]/a')
-print(items)
-titles_len = soup.find_all("table#mainboard span#subject a")
-titles = [titles_len[n].string for n in range(0, len(titles_len))]
+items1 = driver.find_elements_by_css_selector('table#mainboard span#subject a')
+print(items1)
+titles_len1 = soup.find_all("span", attrs={'id':"subject"})
+titles_len2 = []
+for i in titles_len1:
+    titles_len2.append(i.find('a').string)
 
-item_times_len = soup.find_all('td', width = 45)
-item_times = [item_times_len[n].string for n in range(1,len(item_times_len) - 1)]
+print(titles_len2)
+item_times_len = soup.find_all('td', attrs={'class':'listno'})
+item_times = []
+for n in range(0,len(item_times_len)):
+    if(n % 4 == 1 or n % 4 == 2):
+        item_times.append(item_times_len[n].string)
 
-print(items)
+# item_times = [item_times_len[n].string for n in range(1,len(item_times_len))]
 print(item_times)
-for i in range(0,len(items)):
-
-    if int(item_times[i]) < 150:
+for i in range(1,len(items1)):
+    items = driver.find_elements_by_css_selector('table#mainboard span#subject a')
+    if items == items1:
+        print('망함')
+    driver.implicitly_wait(20)
+    if int(item_times[2*i + 11]) < 150:
         continue
-
     items[i].click()
-    delay(5)
+
+    driver.implicitly_wait(10)
     # scroll to the bottom in order to load the comments
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
 
     page = driver.page_source
     soup = BeautifulSoup(page,'lxml')
 
-    thread = soup.find_all('div#memo_content_1 p')
+    thread = soup.find_all('div', attrs={'id':'memo_content_1'})
     comment_list = []
     img_list = []
-    for items in thread:
-        comment = items.find_all('span')
-        img = items.find_all('img')
-        for c_lists, i_lists in comment, img:
-            if c_lists != None or i_lists != None:
+    for div in thread:
+        comment = div.find_all('p', attrs={'class':'cafe-editor-text'})
+        img = div.find_all('img')
+        for c_lists in comment:
+            if c_lists != None:
                 try:
-                    cmt = c_lists.string
+                    cmt = c_lists.get_text()
                     textcmt = re.sub(r'[^\w]', '', cmt) #띄어쓰기 없애는 것
                     comment_list.append(cmt)
-                    img_list.append(i_lists)
+                except TypeError as e:
+                    pass
+            else:
+                pass
+        for i_lists in img:
+            if i_lists != None:
+                try:
+                    img_src = i_lists.get('src')
+                    img_list.append(img_src)
                 except TypeError as e:
                     pass
             else:
