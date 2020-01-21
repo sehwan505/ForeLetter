@@ -1,10 +1,13 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as expect
 import time
 from random import randint
 from bs4 import BeautifulSoup
 import re
+import csv
 
 # https://gist.github.com/aclisp/0c2965af80816bd332b7096a89908ef6 참고함
 def delay(n):
@@ -16,7 +19,6 @@ driver = webdriver.Chrome('/Users/sehwa/Downloads/chromedriver.exe')
 driver.get("https://www.youtube.com")
 print("enter " + driver.title)
 delay(5)
-
 
 # item = driver.find_element_by_css_selector("ytd-masthead div#buttons ytd-button-renderer a")
 # item.click()
@@ -41,7 +43,7 @@ delay(5)
 
 search = driver.find_element_by_css_selector("ytd-masthead form#search-form input#search")
 search.click()
-search.send_keys("아이유")
+search.send_keys("악어")
 search.submit()
 delay(5)
 #
@@ -52,17 +54,18 @@ delay(5)
 # titles=[c[n].string for n in range(0,len(c))]
 item = driver.find_elements_by_css_selector("ytd-search a#video-title")
 print(item)
-for i in range(0,len(item)):
+for i in range(0,2):
     item[i].click()
-    delay(5)
+    WebDriverWait(driver, 10).until(
+        expect.presence_of_element_located((By.CSS_SELECTOR, "ytd-expander div#content"))
+    )
     # scroll to the bottom in order to load the comments
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-
-    time.sleep(6)
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+    delay(20)
     endk = 5
     while endk:
         driver.find_element_by_tag_name('body').send_keys(Keys.END)
-        time.sleep(1)
+        time.sleep(10)
         endk -= 1
 
     page = driver.page_source
@@ -111,3 +114,12 @@ for i in range(0,len(item)):
 # item.send_keys("This is the most amazing things ever seen.\n")
 # item.send_keys("Wanna see more~\n")
 # item.send_keys(Keys.CONTROL, Keys.ENTER)
+
+csvfile = open("youtube_data1.csv","w",newline="", encoding="ANSI")
+csvwriter = csv.writer(csvfile)
+for row in youtube_data:
+    try:
+        csvwriter.writerow(row)
+    except UnicodeEncodeError:
+        pass
+csvfile.close()
