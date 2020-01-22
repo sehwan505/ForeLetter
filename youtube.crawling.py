@@ -10,15 +10,13 @@ import re
 import csv
 
 # https://gist.github.com/aclisp/0c2965af80816bd332b7096a89908ef6 참고함
-def delay(n):
-    time.sleep(randint(2, n))
-
+# 너무 로딩이 안되니까 youtube data api v3 를 써야겠다.
 youtube_data = [] #데이터 저장 리스트
 
 driver = webdriver.Chrome('/Users/sehwa/Downloads/chromedriver.exe')
 driver.get("https://www.youtube.com")
 print("enter " + driver.title)
-delay(5)
+time.sleep(5)
 
 # item = driver.find_element_by_css_selector("ytd-masthead div#buttons ytd-button-renderer a")
 # item.click()
@@ -45,7 +43,7 @@ search = driver.find_element_by_css_selector("ytd-masthead form#search-form inpu
 search.click()
 search.send_keys("악어")
 search.submit()
-delay(5)
+time.sleep(5)
 #
 # page = driver.page_source
 # soup = BeautifulSoup(page,'lxml')
@@ -56,13 +54,13 @@ item = driver.find_elements_by_css_selector("ytd-search a#video-title")
 print(item)
 for i in range(0,2):
     item[i].click()
-    WebDriverWait(driver, 10).until(
-        expect.presence_of_element_located((By.CSS_SELECTOR, "ytd-expander div#content"))
-    )
+    driver.find_element_by_tag_name('body').send_keys(Keys.END)
+    time.sleep(4)
     # scroll to the bottom in order to load the comments
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
-    delay(20)
-    endk = 5
+
+    # sorting=driver.find_element_by_css_selector('paper-button#label')
+    # sorting.click()
+    endk = 2
     while endk:
         driver.find_element_by_tag_name('body').send_keys(Keys.END)
         time.sleep(10)
